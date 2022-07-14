@@ -11,6 +11,7 @@ class AppDrwaer extends StatelessWidget {
         children: [
           AppBar(
             title: const Text('Hello Friend!'),
+            automaticallyImplyLeading: false,
           ),
           const Divider(),
           ListTile(
