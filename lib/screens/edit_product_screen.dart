@@ -85,10 +85,6 @@ class _EditProductScreenState extends State<EditProductScreen> {
     _form.currentState?.save();
     // ignore: unnecessary_null_comparison
     if (_editedProduct.id.isEmpty) {
-      setState(() {
-        _isLoading = true;
-      });
-
       try {
         await Provider.of<Products>(context, listen: false)
             .addProduct(_editedProduct);
@@ -107,17 +103,23 @@ class _EditProductScreenState extends State<EditProductScreen> {
                         child: const Text('Okay'))
                   ],
                 ));
-      } finally {
-        setState(() {
-          _isLoading = false;
-        });
-        Navigator.of(context).pop();
       }
+      //  finally {
+      //   setState(() {
+      //     _isLoading = false;
+      //   });
+      //   Navigator.of(context).pop();
+      // }
     } else {
-      Provider.of<Products>(context, listen: false)
+      await Provider.of<Products>(context, listen: false)
           .updateProduct(_editedProduct.id, _editedProduct);
-      Navigator.of(context).pop();
     }
+
+    setState(() {
+      _isLoading = true;
+    });
+    if (!mounted) return;
+    Navigator.of(context).pop();
   }
 
   @override
