@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:shopping_app_flutter/providers/products.dart';
-import 'package:shopping_app_flutter/screens/edit_product_screen.dart';
+import '/providers/products.dart';
+import '/screens/edit_product_screen.dart';
 
 // ignore: must_be_immutable
 class UserProductItem extends StatelessWidget {
@@ -14,6 +14,7 @@ class UserProductItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
     return ListTile(
       title: Text(title),
       leading: CircleAvatar(
@@ -33,9 +34,20 @@ class UserProductItem extends StatelessWidget {
               color: Theme.of(context).colorScheme.primary,
             ),
             IconButton(
-                onPressed: (() {
-                  Provider.of<Products>(context, listen: false)
-                      .deleteProduct(id);
+                onPressed: (() async {
+                  try {
+                    await Provider.of<Products>(context, listen: false)
+                        .deleteProduct(id);
+                  } catch (error) {
+                    // ignore: avoid_print
+                    print(error);
+                    scaffoldMessenger.showSnackBar(const SnackBar(
+                      content: Text(
+                        'Deleting Failed!',
+                        textAlign: TextAlign.center,
+                      ),
+                    ));
+                  }
                 }),
                 icon: const Icon(Icons.delete),
                 color: Theme.of(context).errorColor),
