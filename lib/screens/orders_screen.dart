@@ -13,19 +13,24 @@ class OrdersScrenn extends StatefulWidget {
 }
 
 class _OrdersScrennState extends State<OrdersScrenn> {
-  // ignore: unused_field
-  var _isLoading = false;
+  // ignore: avoid_init_to_null
+  Future? _ordersFuture = null;
+  Future _obtainOrderFutures() {
+    return Provider.of<Orders>(context, listen: false).fetchAndSetOrders();
+  }
+
   @override
   void initState() {
-    Future.delayed(Duration.zero).then((_) async {
-      setState(() {
-        _isLoading = true;
-      });
-      await Provider.of<Orders>(context, listen: false).fetchAndSetOrders();
-      setState(() {
-        _isLoading = false;
-      });
-    });
+    // Future.delayed(Duration.zero).then((_) async {
+    //   setState(() {
+    //     _isLoading = true;
+    //   });
+    //   await Provider.of<Orders>(context, listen: false).fetchAndSetOrders();
+    //   setState(() {
+    //     _isLoading = false;
+    //   });
+    // });
+    _ordersFuture = _obtainOrderFutures();
     super.initState();
   }
 
@@ -37,15 +42,27 @@ class _OrdersScrennState extends State<OrdersScrenn> {
           title: const Text('Your Orders'),
         ),
         drawer: const AppDrwaer(),
-        body: _isLoading
-            ? const Center(
-                child: CircularProgressIndicator(),
-              )
-            : ListView.builder(
-                itemCount: orderData.orders.length,
-                itemBuilder: (ctx, i) => OrderItem(
-                  order: orderData.orders[i],
-                ),
-              ));
+        body: FutureBuilder(
+            future: _ordersFuture,
+            builder: (ctx, dataSnapshot) {
+              if (dataSnapshot.connectionState == ConnectionState.waiting) {
+                return const Center(
+                  child: CircularProgressIndicator(),
+                );
+              } else {
+                if (dataSnapshot.error != null) {
+                  return const Center(
+                    child: Text('Some errro occured'),
+                  );
+                } else {
+                  return ListView.builder(
+                    itemCount: orderData.orders.length,
+                    itemBuilder: (ctx, i) => OrderItem(
+                      order: orderData.orders[i],
+                    ),
+                  );
+                }
+              }
+            }));
   }
 }
