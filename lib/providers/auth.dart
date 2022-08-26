@@ -1,3 +1,5 @@
+// ignore_for_file: unnecessary_null_comparison
+
 import 'dart:convert';
 
 import 'package:flutter/widgets.dart';
@@ -8,9 +10,21 @@ class Auth with ChangeNotifier {
   // ignore: unused_field
   late String _token;
   // ignore: unused_field
-  late DateTime _expiryDate;
+  DateTime _expiryDate = DateTime.now();
   // ignore: unused_field
   late String _userId;
+  bool get isAuth {
+    return token != null;
+  }
+
+  String? get token {
+    if (_expiryDate != null &&
+        _expiryDate.isAfter(DateTime.now()) &&
+        _token != null) {
+      return _token;
+    }
+    return null;
+  }
 
   Future<void> _authenticate(
       String? email, String? password, String? urlSegment) async {
@@ -31,6 +45,11 @@ class Auth with ChangeNotifier {
       if (responseData["error"] != null) {
         throw HttpException(responseData["error"]["message"]);
       }
+      _token = responseData['idToken'];
+      _userId = responseData['localId'];
+      _expiryDate = DateTime.now()
+          .add(Duration(seconds: int.parse(responseData['expiresIn'])));
+      notifyListeners();
     } catch (error) {
       // ignore: use_rethrow_when_possible
       throw error;
