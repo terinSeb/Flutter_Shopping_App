@@ -22,7 +22,7 @@ class Product with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> toogleFavorite(String? authToken, String userId) async {
+  Future<void> toogleFavorite(String? authToken, String? userId) async {
     final oldStatus = isFavorite;
     try {
       isFavorite = !isFavorite;

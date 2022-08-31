@@ -1,5 +1,6 @@
 // ignore_for_file: unnecessary_null_comparison
 
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/widgets.dart';
@@ -8,25 +9,26 @@ import 'package:shopping_app_flutter/models/http_exception.dart';
 
 class Auth with ChangeNotifier {
   // ignore: unused_field
-  late String _token;
+  late String? _token;
   // ignore: unused_field
-  DateTime _expiryDate = DateTime.now();
+  DateTime? _expiryDate = DateTime.now();
   // ignore: unused_field
-  late String _userId;
+  late String? _userId;
+  Timer? _authTimer;
   bool get isAuth {
     return token != null;
   }
 
   String? get token {
     if (_expiryDate != null &&
-        _expiryDate.isAfter(DateTime.now()) &&
+        _expiryDate!.isAfter(DateTime.now()) &&
         _token != null) {
       return _token;
     }
     return null;
   }
 
-  String get userId {
+  String? get userId {
     return _userId;
   }
 
@@ -53,6 +55,7 @@ class Auth with ChangeNotifier {
       _userId = responseData['localId'];
       _expiryDate = DateTime.now()
           .add(Duration(seconds: int.parse(responseData['expiresIn'])));
+      _autoLogout();
       notifyListeners();
     } catch (error) {
       // ignore: use_rethrow_when_possible
@@ -66,5 +69,25 @@ class Auth with ChangeNotifier {
 
   Future<void> login(String? email, String? password, String? authData) async {
     return _authenticate(email, password, 'signInWithPassword');
+  }
+
+  void logOut() {
+    _userId = null;
+    _token = null;
+    _expiryDate = null;
+    if (_authTimer != null) {
+      _authTimer?.cancel();
+      _authTimer = null;
+    }
+    notifyListeners();
+  }
+
+  void _autoLogout() {
+    if (_authTimer != null) {
+      _authTimer?.cancel();
+    }
+    var timeToExpiry = _expiryDate!.difference(DateTime.now()).inSeconds;
+    // timeToExpiry = 3;
+    _authTimer = Timer(Duration(seconds: timeToExpiry), logOut);
   }
 }
