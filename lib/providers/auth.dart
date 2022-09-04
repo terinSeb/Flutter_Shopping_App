@@ -1,5 +1,3 @@
-// ignore_for_file: unnecessary_null_comparison
-
 import 'dart:async';
 import 'dart:convert';
 
@@ -76,20 +74,40 @@ class Auth with ChangeNotifier {
     if (!prefs.containsKey('userData')) {
       return false;
     }
-    final extractedUserData = json
-        .decode(prefs.getString('userData').toString()) as Map<String, Object>;
+    Map<String, dynamic> extractedUserData =
+        json.decode(prefs.getString('userData')!.toString());
+
     final expiryDate =
-        DateTime.parse(extractedUserData['expiryDate'].toString());
+        DateTime.parse(extractedUserData['expiryDate']!.toString());
+
     if (expiryDate.isBefore(DateTime.now())) {
       return false;
     }
-    _token = extractedUserData['token'].toString();
-    _userId = extractedUserData['userId'].toString();
+    _token = extractedUserData['token'] as String?;
+    _userId = extractedUserData['userId'] as String?;
     _expiryDate = expiryDate;
     notifyListeners();
     _autoLogout();
     return true;
   }
+  // Future<bool> tryAutoLogin() async {
+  //   final prefs = await SharedPreferences.getInstance();
+  //   if (!prefs.containsKey('userData')) {
+  //     return false;
+  //   }
+  //   final extractedUserData = json.decode(prefs.getString('userData').toString()) as Map<String, Object>;
+  //   final expiryDate =
+  //       DateTime.parse(extractedUserData['expiryDate'].toString());
+  //   if (expiryDate.isBefore(DateTime.now())) {
+  //     return false;
+  //   }
+  //   _token = extractedUserData['token'].toString();
+  //   _userId = extractedUserData['userId'].toString();
+  //   _expiryDate = expiryDate;
+  //   notifyListeners();
+  //   _autoLogout();
+  //   return true;
+  // }
 
   Future<void> signup(String? email, String? password, String? authData) async {
     return _authenticate(email, password, 'signUp');
@@ -99,7 +117,7 @@ class Auth with ChangeNotifier {
     return _authenticate(email, password, 'signInWithPassword');
   }
 
-  void logOut() {
+  Future<void> logOut() async {
     _userId = null;
     _token = null;
     _expiryDate = null;
@@ -108,6 +126,9 @@ class Auth with ChangeNotifier {
       _authTimer = null;
     }
     notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    // prefs.remove('userData');
+    prefs.clear();
   }
 
   void _autoLogout() {
