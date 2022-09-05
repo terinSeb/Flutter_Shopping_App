@@ -114,7 +114,7 @@ class _AuthCardState extends State<AuthCard>
             begin: const Size(double.infinity, 260),
             end: const Size(double.infinity, 320))
         .animate(CurvedAnimation(parent: _controller, curve: Curves.linear));
-    _heightAnimation.addListener(() => setState(() {}));
+    // _heightAnimation.addListener(() => setState(() {}));
   }
 
   @override
@@ -217,12 +217,16 @@ class _AuthCardState extends State<AuthCard>
         borderRadius: BorderRadius.circular(10.0),
       ),
       elevation: 8.0,
-      child: Container(
-        // height: _authMode == AuthMode.Signup ? 320 : 260,
-        height: _heightAnimation.value.height,
-        constraints: BoxConstraints(minHeight: _heightAnimation.value.height),
-        width: deviceSize.width * 0.75,
-        padding: const EdgeInsets.all(16.0),
+      child: AnimatedBuilder(
+        animation: _heightAnimation,
+        builder: (ctx, ch) => Container(
+            // height: _authMode == AuthMode.Signup ? 320 : 260,
+            height: _heightAnimation.value.height,
+            constraints:
+                BoxConstraints(minHeight: _heightAnimation.value.height),
+            width: deviceSize.width * 0.75,
+            padding: const EdgeInsets.all(16.0),
+            child: ch),
         child: Form(
           key: _formKey,
           child: SingleChildScrollView(
@@ -236,7 +240,6 @@ class _AuthCardState extends State<AuthCard>
                       return 'Invalid email!';
                     }
                     return null;
-                    // return null;
                   },
                   onSaved: (value) {
                     _authData['email'] = value!;
@@ -277,20 +280,15 @@ class _AuthCardState extends State<AuthCard>
                 if (_isLoading)
                   const CircularProgressIndicator()
                 else
-                  ElevatedButton(
+                  RaisedButton(
                     onPressed: _submit,
-                    style: ButtonStyle(
-                        padding: MaterialStateProperty.all<EdgeInsets>(
-                            const EdgeInsets.symmetric(
-                                horizontal: 30.0, vertical: 4)),
-                        foregroundColor:
-                            MaterialStateProperty.all<Color>(Colors.white),
-                        shape:
-                            MaterialStateProperty.all<RoundedRectangleBorder>(
-                                RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(18.0),
-                                    side:
-                                        const BorderSide(color: Colors.red)))),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 30.0, vertical: 8.0),
+                    color: Theme.of(context).primaryColor,
+                    textColor: Theme.of(context).primaryTextTheme.button?.color,
                     child:
                         Text(_authMode == AuthMode.Login ? 'LOGIN' : 'SIGN UP'),
                   ),
@@ -302,10 +300,7 @@ class _AuthCardState extends State<AuthCard>
                   textColor: Theme.of(context).primaryColor,
                   child: Text(
                       '${_authMode == AuthMode.Login ? 'SIGNUP' : 'LOGIN'} INSTEAD'),
-                )
-
-                // materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                // textColor: Theme.of(context).primaryColor,
+                ),
               ],
             ),
           ),
